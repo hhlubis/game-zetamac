@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Aritmatika Cepat — Mental Math Drill</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#161b26',
+                            925: '#0d1117',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Hilangkan panah spinner pada input angka */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Animasi flash halus saat jawaban benar atau skip */
+        @keyframes pulseGreen {
+            0% { background-color: rgba(16, 185, 129, 0.22); }
+            100% { background-color: transparent; }
+        }
+        @keyframes shakeRed {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        .flash-correct {
+            animation: pulseGreen 0.25s ease-out;
+        }
+        .shake-skip {
+            animation: shakeRed 0.25s ease-in-out;
+        }
+
+        /* Transisi tema yang halus */
+        body {
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-925 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Header / Navbar -->
+    <header class="w-full max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80">
+        <div class="flex items-center gap-2.5 cursor-pointer" onclick="goHome()">
+            <div class="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-mono font-bold text-lg shadow-sm">
+                ∑x
+            </div>
+            <div>
+                <h1 class="font-bold text-base sm:text-lg tracking-tight leading-none" data-i18n="appTitle">Aritmatika Cepat</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" data-i18n="appSubtitle">Mental Math & Algebra Drill</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Toggle Bahasa (ID / EN) -->
+            <button id="btn-lang" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition" title="Ganti Bahasa / Switch Language">
+                ID
+            </button>
+
+            <!-- Toggle Suara (Web Audio API) -->
+            <button id="btn-sound" onclick="toggleSound()" class="p-2 rounded-lg bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition" title="Efek Suara">
+                <!-- Ikon Sound Off (Default) -->
+                <svg id="icon-sound-off" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+                <!-- Ikon Sound On -->
+                <svg id="icon-sound-on" class="w-4 h-4 hidden text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+
+            <!-- Toggle Tema Dark/Light -->
+            <button id="btn-theme" onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition" title="Ganti Tema">
+                <!-- Ikon Sun (muncul saat Dark Mode) -->
+                <svg id="icon-sun" class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <!-- Ikon Moon (muncul saat Light Mode) -->
+                <svg id="icon-moon" class="w-4 h-4 hidden text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 flex-grow flex flex-col justify-center">
+
+        <!-- ========================================================= -->
+        <!-- 1. SCREEN KONFIGURASI / START                             -->
+        <!-- ========================================================= -->
+        <section id="screen-setup" class="space-y-6">
+            <!-- Banner High Score & Preset -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
+                    <div>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-amber-500" data-i18n="presetLabel">Tingkat Kesulitan</span>
+                        <div class="flex flex-wrap gap-2 mt-2" id="preset-buttons">
+                            <button type="button" onclick="applyPreset('easy')" data-preset="easy" class="preset-btn px-3.5 py-1.5 rounded-xl text-sm font-medium border transition">Mudah</button>
+                            <button type="button" onclick="applyPreset('standard')" data-preset="standard" class="preset-btn px-3.5 py-1.5 rounded-xl text-sm font-medium border transition">Standar (Zetamac)</button>
+                            <button type="button" onclick="applyPreset('hard')" data-preset="hard" class="preset-btn px-3.5 py-1.5 rounded-xl text-sm font-medium border transition">Sulit</button>
+                            <button type="button" onclick="applyPreset('custom')" data-preset="custom" class="preset-btn px-3.5 py-1.5 rounded-xl text-sm font-medium border transition">Kustom</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-100 dark:bg-slate-850 px-4 py-3 rounded-xl border border-slate-200/70 dark:border-slate-800 flex items-center gap-3 self-start sm:self-center">
+                        <div class="text-amber-500">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400" data-i18n="highScoreLabel">Rekor Tertinggi (<span id="hs-duration-label">120d</span>)</div>
+                            <div class="font-mono font-bold text-xl text-slate-900 dark:text-white" id="high-score-display">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pilihan Durasi & Mode Submit -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5" data-i18n="durationLabel">Durasi Latihan</label>
+                        <div class="grid grid-cols-4 gap-2" id="duration-buttons">
+                            <button type="button" onclick="selectDuration(30)" data-dur="30" class="dur-btn py-2 rounded-xl font-mono text-sm font-semibold border transition">30s</button>
+                            <button type="button" onclick="selectDuration(60)" data-dur="60" class="dur-btn py-2 rounded-xl font-mono text-sm font-semibold border transition">60s</button>
+                            <button type="button" onclick="selectDuration(120)" data-dur="120" class="dur-btn py-2 rounded-xl font-mono text-sm font-semibold border transition">120s</button>
+                            <button type="button" onclick="selectDuration(300)" data-dur="300" class="dur-btn py-2 rounded-xl font-mono text-sm font-semibold border transition">300s</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5" data-i18n="inputModeLabel">Mode Pengiriman Jawaban</label>
+                        <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-850 border border-slate-200/80 dark:border-slate-800 cursor-pointer">
+                            <div>
+                                <span class="text-sm font-medium block" data-i18n="autoSubmitTitle">Auto-Submit Jawaban Benar</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400" data-i18n="autoSubmitDesc">Langsung lanjut soal berikutnya tanpa tekan Enter</span>
+                            </div>
+                            <input type="checkbox" id="opt-autosubmit" checked class="w-5 h-5 accent-amber-500 rounded cursor-pointer">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pengaturan Operasi & Rentang Angka -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="operationsHeader">Pilih Operasi & Rentang Angka</h2>
+                    <span id="op-warning" class="text-xs text-rose-500 font-medium hidden" data-i18n="selectOneOp">Pilih minimal 1 operasi!</span>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- Penjumlahan -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850/90 border border-slate-200/70 dark:border-slate-800">
+                        <label class="flex items-center gap-3 cursor-pointer min-w-[170px]">
+                            <input type="checkbox" id="op-add" checked onchange="onConfigChange()" class="w-4 h-4 accent-amber-500 rounded">
+                            <span class="font-medium text-sm"><span class="font-mono text-amber-500 font-bold mr-1.5">+</span> <span data-i18n="opAdd">Penjumlahan</span></span>
+                        </label>
+                        <div class="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-600 dark:text-slate-300">
+                            <span>(</span>
+                            <input type="number" id="add-min1" value="2" onchange="onConfigChange()" class="w-16 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center focus:border-amber-500 focus:outline-none">
+                            <span data-i18n="to">s/d</span>
+                            <input type="number" id="add-max1" value="100" onchange="onConfigChange()" class="w-16 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center focus:border-amber-500 focus:outline-none">
+                            <span>) + (</span>
+                            <input type="number" id="add-min2" value="2" onchange="onConfigChange()" class="w-16 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center focus:border-amber-500 focus:outline-none">
+                            <span data-i18n="to">s/d</span>
+                            <input type="number" id="add-max2" value="100" onchange="onConfigChange()" class="w-16 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center focus:border-amber-500 focus:outline-none">
+                            <span>)</span>
+                        </div>
+                    </div>
+
+                    <!-- Pengurangan -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850/90 border border-slate-200/70 dark:border-slate-800">
+                        <label class="flex items-center gap-3 cursor-pointer min-w-[170px]">
+                            <input type="checkbox" id="op-sub" checked onchange="onConfigChange()" class="w-4 h-4 accent-amber-500 rounded">
+                            <span class="font-medium text-sm"><span class="font-mono text-amber-500 font-bold mr-1.5">−</span> <span data-i18n="opSub">Pengurangan</span></span>
+                        </label>
+                        <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                            <span data-i18n="subNote">Kebalikan penjumlahan (hasil bulat positif)</span>
+                            <label class="inline-flex items-center gap-1.5 ml-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                                <input type="checkbox" id="sub-negative" onchange="onConfigChange()" class="w-3.5 h-3.5 accent-amber-500 rounded">
+                                <span data-i18n="allowNeg">Izinkan negatif</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Perkalian -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850/90 border border-slate-200/70 dark:border-slate-800">
+                        <label class="flex items-center gap-3 cursor-pointer min-w-[170px]">
+                            <input type="checkbox" id="op-mul" checked onchange="onConfigChange()" class="w-4 h-4 accent-amber-500 rounded">
+                            <span class="font-medium text-sm"><span class="font-mono text-amber-500 font-bold mr-1.5">×</span> <span data-i18n="opMul">Perkalian</span></span>
+                        </label>
+                        <div class="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-600 dark:text-slate-300">
+                            <span>(</span>
+                            <input type="number" id="mul-min1" value="2" onchange="onConfigChange()" class="w-16 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center focus:border-amber-500 focus:outline-none">
+                            <span data-i18n="to">s/d</span>
+                            <input type="number" id="mul-max1" value="12" onchange="onConfigChange()" class="w-16 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center focus:border-amber-500 focus:outline-none">
+                            <span>) × (</span>
+                            <input type="number" id="mul-min2" value="2" onchange="onConfigChange()" class="w-16 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center focus:border-amber-500 focus:outline-none">
+                            <span data-i18n="to">s/d</span>
+                            <input type="number" id="mul-max2" value="100" onchange="onConfigChange()" class="w-16 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center focus:border-amber-500 focus:outline-none">
+                            <span>)</span>
+                        </div>
+                    </div>
+
+                    <!-- Pembagian -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850/90 border border-slate-200/70 dark:border-slate-800">
+                        <label class="flex items-center gap-3 cursor-pointer min-w-[170px]">
+                            <input type="checkbox" id="op-div" checked onchange="onConfigChange()" class="w-4 h-4 accent-amber-500 rounded">
+                            <span class="font-medium text-sm"><span class="font-mono text-amber-500 font-bold mr-1.5">÷</span> <span data-i18n="opDiv">Pembagian</span></span>
+                        </label>
+                        <div class="text-xs text-slate-500 dark:text-slate-400" data-i18n="divNote">
+                            Kebalikan perkalian di atas (hasil selalu bilangan bulat tanpa sisa)
+                        </div>
+                    </div>
+
+                    <!-- Aljabar Dasar -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850/90 border border-slate-200/70 dark:border-slate-800">
+                        <label class="flex items-center gap-3 cursor-pointer min-w-[170px]">
+                            <input type="checkbox" id="op-alg" onchange="onConfigChange()" class="w-4 h-4 accent-amber-500 rounded">
+                            <span class="font-medium text-sm"><span class="font-mono text-amber-500 font-bold mr-1.5">x</span> <span data-i18n="opAlg">Aljabar Dasar</span></span>
+                        </label>
+                        <div class="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-600 dark:text-slate-300">
+                            <span>ax + b = c &nbsp;|&nbsp; x ∈ [</span>
+                            <input type="number" id="alg-xmin" value="1" onchange="onConfigChange()" class="w-14 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center focus:border-amber-500 focus:outline-none">
+                            <span data-i18n="to">s/d</span>
+                            <input type="number" id="alg-xmax" value="15" onchange="onConfigChange()" class="w-14 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center focus:border-amber-500 focus:outline-none">
+                            <span>]</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombol Mulai -->
+                <div class="pt-3">
+                    <button id="btn-start" onclick="startGame()" class="w-full py-3.5 px-6 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-slate-950 font-bold text-base sm:text-lg shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2">
+                        <span data-i18n="startBtn">Mulai Latihan</span>
+                        <span class="text-xs font-mono bg-slate-950/15 px-2 py-0.5 rounded">Enter</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 2. SCREEN ACTIVE GAMEPLAY                                 -->
+        <!-- ========================================================= -->
+        <section id="screen-play" class="hidden flex-col justify-between space-y-6">
+            <!-- Top Bar: Timer, Score, Streak -->
+            <div class="grid grid-cols-3 gap-3 sm:gap-4">
+                <div id="timer-box" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 text-center transition-colors">
+                    <div class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider" data-i18n="timeLabel">Sisa Waktu</div>
+                    <div id="display-timer" class="font-mono font-bold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-0.5">120</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 text-center">
+                    <div class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider" data-i18n="scoreLabel">Skor</div>
+                    <div id="display-score" class="font-mono font-bold text-2xl sm:text-3xl text-amber-500 mt-0.5">0</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 text-center">
+                    <div class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider" data-i18n="streakLabel">Streak</div>
+                    <div id="display-streak" class="font-mono font-bold text-2xl sm:text-3xl text-emerald-500 mt-0.5">0</div>
+                </div>
+            </div>
+
+            <!-- Area Soal Utama -->
+            <div id="problem-card" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-14 shadow-sm flex flex-col items-center justify-center min-h-[280px] sm:min-h-[320px] relative transition">
+                <!-- Badge Jenis Operasi -->
+                <span id="problem-badge" class="absolute top-4 left-4 text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                    +
+                </span>
+
+                <!-- Tombol Akhiri Cepat -->
+                <button onclick="endGame()" class="absolute top-4 right-4 text-xs text-slate-400 hover:text-rose-500 transition px-2 py-1 rounded-lg" data-i18n="quitBtn">
+                    Akhiri
+                </button>
+
+                <!-- Teks Soal -->
+                <div id="problem-text" class="font-mono font-bold text-4xl sm:text-6xl tracking-tight text-slate-900 dark:text-white text-center mb-8 select-none">
+                    12 + 15
+                </div>
+
+                <!-- Input Jawaban -->
+                <div class="w-full max-w-xs relative">
+                    <input
+                        type="text"
+                        inputmode="numeric"
+                        pattern="[0-9\-]*"
+                        id="answer-input"
+                        autocomplete="off"
+                        autocorrect="off"
+                        spellcheck="false"
+                        placeholder="?"
+                        class="w-full text-center font-mono font-bold text-3xl sm:text-4xl py-3 px-4 rounded-2xl bg-slate-100 dark:bg-slate-850 border-2 border-slate-300 dark:border-slate-700 focus:border-amber-500 dark:focus:border-amber-500 focus:outline-none text-slate-900 dark:text-white transition"
+                    />
+                </div>
+
+                <!-- Kontrol Bawah (Skip & Petunjuk) -->
+                <div class="mt-6 flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                    <button type="button" onclick="skipProblem()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium transition flex items-center gap-1.5">
+                        <span data-i18n="skipBtn">Lewati Soal (-2d)</span>
+                        <kbd class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700">Esc</kbd>
+                    </button>
+                    <span id="enter-hint" class="hidden font-mono" data-i18n="pressEnterHint">Tekan Enter untuk kirim</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 3. SCREEN GAME OVER / RINGKASAN HASIL                     -->
+        <!-- ========================================================= -->
+        <section id="screen-result" class="hidden space-y-6">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-2xl font-bold tracking-tight" data-i18n="resultTitle">Sesi Selesai!</h2>
+                            <span id="new-record-badge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-500 border border-amber-500/30">
+                                ★ Rekor Baru!
+                            </span>
+                        </div>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1" id="result-subtitle">Ringkasan performa berhitung cepat Anda</p>
+                    </div>
+
+                    <div class="flex gap-2.5">
+                        <button onclick="startGame()" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-sm transition flex items-center gap-2">
+                            <span data-i18n="playAgainBtn">Main Lagi</span>
+                            <kbd class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-950/15">Enter</kbd>
+                        </button>
+                        <button onclick="showSetup()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm transition" data-i18n="settingsBtn">
+                            Pengaturan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Kartu Statistik Utama -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 py-6 border-b border-slate-100 dark:border-slate-800">
+                    <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800">
+                        <div class="text-xs text-slate-500 dark:text-slate-400" data-i18n="statScore">Skor Akhir</div>
+                        <div id="res-score" class="font-mono font-bold text-2xl sm:text-3xl text-amber-500 mt-1">0</div>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800">
+                        <div class="text-xs text-slate-500 dark:text-slate-400" data-i18n="statQpm">Kecepatan (QPM)</div>
+                        <div id="res-qpm" class="font-mono font-bold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-1">0.0</div>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800">
+                        <div class="text-xs text-slate-500 dark:text-slate-400" data-i18n="statAvgTime">Rata-rata / Soal</div>
+                        <div id="res-avg-time" class="font-mono font-bold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-1">0.0s</div>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800">
+                        <div class="text-xs text-slate-500 dark:text-slate-400" data-i18n="statAccuracy">Akurasi</div>
+                        <div id="res-accuracy" class="font-mono font-bold text-2xl sm:text-3xl text-emerald-500 mt-1">100%</div>
+                    </div>
+                    <div class="col-span-2 sm:col-span-1 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800">
+                        <div class="text-xs text-slate-500 dark:text-slate-400" data-i18n="statAttempted">Total Soal</div>
+                        <div id="res-attempted" class="font-mono font-bold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-1">0</div>
+                    </div>
+                </div>
+
+                <!-- Breakdown per Jenis Operasi & Soal Terlambat -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+                    <!-- Breakdown Operasi -->
+                    <div>
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3" data-i18n="breakdownHeader">Performa per Jenis Operasi</h3>
+                        <div id="breakdown-list" class="space-y-2.5">
+                            <!-- Diisi via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Soal Terlambat / Dilewati -->
+                    <div>
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3" data-i18n="reviewHeader">Evaluasi Soal Terlambat / Dilewati</h3>
+                        <div id="review-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                            <!-- Diisi via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-4xl mx-auto px-4 sm:px-6 py-4 text-center text-xs text-slate-400 dark:text-slate-500">
+        <span data-i18n="footerTip">Tips: Gunakan numpad keyboard atau ketik langsung untuk kecepatan maksimal.</span>
+    </footer>
+
+    <script>
+        /* =====================================================================
+           1. STATE & KONFIGURASI GAME
+           ===================================================================== */
+        const state = {
+            screen: 'setup', // 'setup' | 'play' | 'result'
+            lang: 'id',
+            soundEnabled: false,
+            duration: 120,
+            preset: 'standard',
+            timeLeft: 120,
+            timerInterval: null,
+            score: 0,
+            streak: 0,
+            maxStreak: 0,
+            currentProblem: null,
+            problemStartTime: 0,
+            history: [], // Menyimpan { op, text, answer, timeTaken, skipped }
+            highScores: JSON.parse(localStorage.getItem('aritmatika_highscores') || '{}')
+        };
+
+        // Kamus Bahasa (Indonesia & Inggris)
+        const i18n = {
+            id: {
+                appTitle: 'Aritmatika Cepat',
+                appSubtitle: 'Mental Math & Algebra Drill',
+                presetLabel: 'Tingkat Kesulitan',
+                highScoreLabel: 'Rekor Tertinggi',
+                durationLabel: 'Durasi Latihan',
+                inputModeLabel: 'Mode Pengiriman Jawaban',
+                autoSubmitTitle: 'Auto-Submit Jawaban Benar',
+                autoSubmitDesc: 'Langsung lanjut soal berikutnya tanpa tekan Enter',
+                operationsHeader: 'Pilih Operasi & Rentang Angka',
+                selectOneOp: 'Pilih minimal 1 operasi!',
+                opAdd: 'Penjumlahan',
+                opSub: 'Pengurangan',
+                opMul: 'Perkalian',
+                opDiv: 'Pembagian',
+                opAlg: 'Aljabar Dasar',
+                to: 's/d',
+                subNote: 'Kebalikan penjumlahan',
+                allowNeg: 'Izinkan hasil negatif',
+                divNote: 'Kebalikan perkalian di atas (hasil bilangan bulat)',
+                startBtn: 'Mulai Latihan',
+                timeLabel: 'Sisa Waktu',
+                scoreLabel: 'Skor',
+                streakLabel: 'Streak',
+                quitBtn: 'Akhiri',
+                skipBtn: 'Lewati (-2d)',
+                pressEnterHint: 'Tekan Enter untuk kirim',
+                resultTitle: 'Sesi Selesai!',
+                playAgainBtn: 'Main Lagi',
+                settingsBtn: 'Pengaturan',
+                statScore: 'Skor Akhir',
+                statQpm: 'Soal / Menit',
+                statAvgTime: 'Rata-rata / Soal',
+                statAccuracy: 'Akurasi',
+                statAttempted: 'Total Dijawab',
+                breakdownHeader: 'Performa per Jenis Operasi',
+                reviewHeader: 'Soal Terlambat / Dilewati',
+                footerTip: 'Tips: Ketik angka langsung pada keyboard untuk kecepatan maksimal.',
+                noData: 'Belum ada data soal.',
+                skippedTag: 'Dilewati'
+            },
+            en: {
+                appTitle: 'Speed Arithmetic',
+                appSubtitle: 'Mental Math & Algebra Drill',
+                presetLabel: 'Difficulty Preset',
+                highScoreLabel: 'High Score',
+                durationLabel: 'Duration',
+                inputModeLabel: 'Submission Mode',
+                autoSubmitTitle: 'Auto-Submit Correct Answer',
+                autoSubmitDesc: 'Advance immediately without pressing Enter',
+                operationsHeader: 'Operations & Number Ranges',
+                selectOneOp: 'Select at least 1 operation!',
+                opAdd: 'Addition',
+                opSub: 'Subtraction',
+                opMul: 'Multiplication',
+                opDiv: 'Division',
+                opAlg: 'Basic Algebra',
+                to: 'to',
+                subNote: 'Reverse of addition',
+                allowNeg: 'Allow negative results',
+                divNote: 'Reverse of multiplication above (integer quotients)',
+                startBtn: 'Start Drill',
+                timeLabel: 'Time Left',
+                scoreLabel: 'Score',
+                streakLabel: 'Streak',
+                quitBtn: 'End',
+                skipBtn: 'Skip (-2s)',
+                pressEnterHint: 'Press Enter to submit',
+                resultTitle: 'Session Complete!',
+                playAgainBtn: 'Play Again',
+                settingsBtn: 'Settings',
+                statScore: 'Final Score',
+                statQpm: 'Questions / Min',
+                statAvgTime: 'Avg Time / Q',
+                statAccuracy: 'Accuracy',
+                statAttempted: 'Attempted',
+                breakdownHeader: 'Performance by Operation',
+                reviewHeader: 'Slowest & Skipped Problems',
+                footerTip: 'Tip: Type digits directly on your keyboard for maximum speed.',
+                noData: 'No problem data recorded.',
+                skippedTag: 'Skipped'
+            }
+        };
+
+        /* =====================================================================
+           2. WEB AUDIO API (EFEK SUARA SINTETIS TANPA FILE EKSTERNAL)
+           ===================================================================== */
+        let audioCtx = null;
+
+        function playTone(type) {
+            if (!state.soundEnabled) return;
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, now); // D5
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.08); // A5
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } else if (type === 'skip') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.linearRampToValueAtTime(160, now + 0.15);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'end') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.12); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.24); // G5
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                }
+            } catch (e) {
+                // Abaikan jika browser memblokir audio
+            }
+        }
+
+        /* =====================================================================
+           3. PENGATURAN UI, TEMA, BAHASA, DAN PRESET
+           ===================================================================== */
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            document.getElementById('icon-sun').classList.toggle('hidden', !isDark);
+            document.getElementById('icon-moon').classList.toggle('hidden', isDark);
+        }
+
+        function toggleSound() {
+            state.soundEnabled = !state.soundEnabled;
+            document.getElementById('icon-sound-on').classList.toggle('hidden', !state.soundEnabled);
+            document.getElementById('icon-sound-off').classList.toggle('hidden', state.soundEnabled);
+            if (state.soundEnabled) playTone('correct');
+        }
+
+        function toggleLanguage() {
+            state.lang = state.lang === 'id' ? 'en' : 'id';
+            document.getElementById('btn-lang').textContent = state.lang.toUpperCase();
+            applyTranslations();
+            updateHighScoreUI();
+        }
+
+        function applyTranslations() {
+            const dict = i18n[state.lang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.textContent = dict[key];
+            });
+            // Update label preset
+            const presetNames = state.lang === 'id'
+                ? { easy: 'Mudah', standard: 'Standar (Zetamac)', hard: 'Sulit', custom: 'Kustom' }
+                : { easy: 'Easy', standard: 'Standard (Zetamac)', hard: 'Hard', custom: 'Custom' };
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                const p = btn.getAttribute('data-preset');
+                btn.textContent = presetNames[p];
+            });
+        }
+
+        function selectDuration(sec) {
+            state.duration = sec;
+            document.querySelectorAll('.dur-btn').forEach(btn => {
+                const isSelected = Number(btn.getAttribute('data-dur')) === sec;
+                btn.className = isSelected
+                    ? 'dur-btn py-2 rounded-xl font-mono text-sm font-bold border border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400 transition'
+                    : 'dur-btn py-2 rounded-xl font-mono text-sm font-semibold border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 transition';
+            });
+            updateHighScoreUI();
+        }
+
+        function applyPreset(preset) {
+            state.preset = preset;
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                const isSelected = btn.getAttribute('data-preset') === preset;
+                btn.className = isSelected
+                    ? 'preset-btn px-3.5 py-1.5 rounded-xl text-sm font-semibold border border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400 transition'
+                    : 'preset-btn px-3.5 py-1.5 rounded-xl text-sm font-medium border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 transition';
+            });
+
+            if (preset === 'easy') {
+                setRanges(1, 20, 1, 20, 2, 10, 2, 10, 1, 10);
+                document.getElementById('op-add').checked = true;
+                document.getElementById('op-sub').checked = true;
+                document.getElementById('op-mul').checked = true;
+                document.getElementById('op-div').checked = false;
+                document.getElementById('op-alg').checked = false;
+                document.getElementById('sub-negative').checked = false;
+            } else if (preset === 'standard') {
+                setRanges(2, 100, 2, 100, 2, 12, 2, 100, 1, 15);
+                document.getElementById('op-add').checked = true;
+                document.getElementById('op-sub').checked = true;
+                document.getElementById('op-mul').checked = true;
+                document.getElementById('op-div').checked = true;
+                document.getElementById('op-alg').checked = false;
+                document.getElementById('sub-negative').checked = false;
+            } else if (preset === 'hard') {
+                setRanges(15, 250, 15, 250, 3, 20, 3, 150, -10, 25);
+                document.getElementById('op-add').checked = true;
+                document.getElementById('op-sub').checked = true;
+                document.getElementById('op-mul').checked = true;
+                document.getElementById('op-div').checked = true;
+                document.getElementById('op-alg').checked = true;
+                document.getElementById('sub-negative').checked = true;
+            }
+            validateOperations();
+        }
+
+        function setRanges(aMin1, aMax1, aMin2, aMax2, mMin1, mMax1, mMin2, mMax2, xMin, xMax) {
+            document.getElementById('add-min1').value = aMin1;
+            document.getElementById('add-max1').value = aMax1;
+            document.getElementById('add-min2').value = aMin2;
+            document.getElementById('add-max2').value = aMax2;
+            document.getElementById('mul-min1').value = mMin1;
+            document.getElementById('mul-max1').value = mMax1;
+            document.getElementById('mul-min2').value = mMin2;
+            document.getElementById('mul-max2').value = mMax2;
+            document.getElementById('alg-xmin').value = xMin;
+            document.getElementById('alg-xmax').value = xMax;
+        }
+
+        function onConfigChange() {
+            if (state.preset !== 'custom') {
+                applyPreset('custom');
+            }
+            validateOperations();
+        }
+
+        function validateOperations() {
+            const ops = getSelectedOperations();
+            const warning = document.getElementById('op-warning');
+            const startBtn = document.getElementById('btn-start');
+            if (ops.length === 0) {
+                warning.classList.remove('hidden');
+                startBtn.disabled = true;
+                startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                warning.classList.add('hidden');
+                startBtn.disabled = false;
+                startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function getSelectedOperations() {
+            const ops = [];
+            if (document.getElementById('op-add').checked) ops.push('add');
+            if (document.getElementById('op-sub').checked) ops.push('sub');
+            if (document.getElementById('op-mul').checked) ops.push('mul');
+            if (document.getElementById('op-div').checked) ops.push('div');
+            if (document.getElementById('op-alg').checked) ops.push('alg');
+            return ops;
+        }
+
+        function updateHighScoreUI() {
+            const key = `dur_${state.duration}`;
+            const best = state.highScores[key] || 0;
+            const suffix = state.lang === 'id' ? 'd' : 's';
+            const hsLabel = document.getElementById('hs-duration-label');
+            if (hsLabel) hsLabel.textContent = `${state.duration}${suffix}`;
+            document.getElementById('high-score-display').textContent = best;
+        }
+
+        /* =====================================================================
+           4. GENERATOR SOAL MATEMATIKA & ALJABAR
+           ===================================================================== */
+        function randInt(min, max) {
+            min = Math.ceil(Math.min(min, max));
+            max = Math.floor(Math.max(min, max));
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateProblem() {
+            const ops = getSelectedOperations();
+            const op = ops[Math.floor(Math.random() * ops.length)];
+
+            const aMin1 = parseInt(document.getElementById('add-min1').value) || 2;
+            const aMax1 = parseInt(document.getElementById('add-max1').value) || 100;
+            const aMin2 = parseInt(document.getElementById('add-min2').value) || 2;
+            const aMax2 = parseInt(document.getElementById('add-max2').value) || 100;
+
+            const mMin1 = parseInt(document.getElementById('mul-min1').value) || 2;
+            const mMax1 = parseInt(document.getElementById('mul-max1').value) || 12;
+            const mMin2 = parseInt(document.getElementById('mul-min2').value) || 2;
+            const mMax2 = parseInt(document.getElementById('mul-max2').value) || 100;
+
+            let text = '';
+            let answer = 0;
+            let badge = '';
+
+            if (op === 'add') {
+                const a = randInt(aMin1, aMax1);
+                const b = randInt(aMin2, aMax2);
+                text = `${a} + ${b}`;
+                answer = a + b;
+                badge = '+';
+            } else if (op === 'sub') {
+                const allowNeg = document.getElementById('sub-negative').checked;
+                const a = randInt(aMin1, aMax1);
+                const b = randInt(aMin2, aMax2);
+                if (allowNeg) {
+                    text = `${a} − ${b}`;
+                    answer = a - b;
+                } else {
+                    const sum = a + b;
+                    text = `${sum} − ${a}`;
+                    answer = b;
+                }
+                badge = '−';
+            } else if (op === 'mul') {
+                const a = randInt(mMin1, mMax1);
+                const b = randInt(mMin2, mMax2);
+                text = `${a} × ${b}`;
+                answer = a * b;
+                badge = '×';
+            } else if (op === 'div') {
+                let a = randInt(mMin1, mMax1);
+                if (a === 0) a = 2; // Hindari pembagian dengan nol
+                const b = randInt(mMin2, mMax2);
+                const product = a * b;
+                text = `${product} ÷ ${a}`;
+                answer = b;
+                badge = '÷';
+            } else if (op === 'alg') {
+                // Persamaan linear: ax + b = c atau ax - b = c
+                const xMin = parseInt(document.getElementById('alg-xmin').value) || 1;
+                const xMax = parseInt(document.getElementById('alg-xmax').value) || 15;
+                let x = randInt(xMin, xMax);
+                let a = randInt(2, 9);
+                const b = randInt(1, 25);
+                const isPlus = Math.random() > 0.4;
+
+                if (isPlus) {
+                    const c = a * x + b;
+                    text = `${a}x + ${b} = ${c}`;
+                } else {
+                    const c = a * x - b;
+                    text = `${a}x − ${b} = ${c}`;
+                }
+                answer = x;
+                badge = 'x = ?';
+            }
+
+            // Hindari soal yang sama persis dua kali berturut-turut
+            if (state.currentProblem && state.currentProblem.text === text) {
+                return generateProblem();
+            }
+
+            state.currentProblem = { op, text, answer, badge };
+            state.problemStartTime = performance.now();
+
+            document.getElementById('problem-badge').textContent = badge;
+            document.getElementById('problem-text').textContent = text;
+        }
+
+        /* =====================================================================
+           5. ALUR PERMAINAN (START, INPUT CHECK, SKIP, GAME OVER)
+           ===================================================================== */
+        function switchScreen(screenName) {
+            state.screen = screenName;
+            document.getElementById('screen-setup').classList.toggle('hidden', screenName !== 'setup');
+            document.getElementById('screen-play').classList.toggle('hidden', screenName !== 'play');
+            document.getElementById('screen-result').classList.toggle('hidden', screenName !== 'result');
+
+            if (screenName === 'play') {
+                document.getElementById('screen-play').classList.add('flex');
+            } else {
+                document.getElementById('screen-play').classList.remove('flex');
+            }
+        }
+
+        function goHome() {
+            if (state.timerInterval) clearInterval(state.timerInterval);
+            showSetup();
+        }
+
+        function showSetup() {
+            updateHighScoreUI();
+            switchScreen('setup');
+        }
+
+        function startGame() {
+            if (getSelectedOperations().length === 0) return;
+
+            state.timeLeft = state.duration;
+            state.score = 0;
+            state.streak = 0;
+            state.maxStreak = 0;
+            state.history = [];
+
+            updateGameplayHUD();
+            switchScreen('play');
+
+            const isAutoSubmit = document.getElementById('opt-autosubmit').checked;
+            document.getElementById('enter-hint').classList.toggle('hidden', isAutoSubmit);
+
+            generateProblem();
+
+            const inputEl = document.getElementById('answer-input');
+            inputEl.value = '';
+            setTimeout(() => inputEl.focus(), 50);
+
+            if (state.timerInterval) clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(() => {
+                state.timeLeft--;
+                updateGameplayHUD();
+                if (state.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function updateGameplayHUD() {
+            const timerEl = document.getElementById('display-timer');
+            const timerBox = document.getElementById('timer-box');
+            timerEl.textContent = Math.max(0, state.timeLeft);
+
+            // Efek urgensi visual saat waktu < 10 detik
+            if (state.timeLeft <= 10 && state.timeLeft > 0) {
+                timerEl.classList.add('text-rose-500');
+                timerBox.classList.add('border-rose-500/50', 'bg-rose-500/5');
+            } else {
+                timerEl.classList.remove('text-rose-500');
+                timerBox.classList.remove('border-rose-500/50', 'bg-rose-500/5');
+            }
+
+            document.getElementById('display-score').textContent = state.score;
+            document.getElementById('display-streak').textContent = state.streak;
+        }
+
+        function handleCorrectAnswer() {
+            const timeTaken = (performance.now() - state.problemStartTime) / 1000;
+            state.history.push({
+                op: state.currentProblem.op,
+                text: state.currentProblem.text,
+                answer: state.currentProblem.answer,
+                timeTaken: timeTaken,
+                skipped: false
+            });
+
+            state.score++;
+            state.streak++;
+            if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+
+            playTone('correct');
+            updateGameplayHUD();
+
+            // Flash feedback hijau singkat
+            const card = document.getElementById('problem-card');
+            card.classList.remove('flash-correct');
+            void card.offsetWidth; // trigger reflow
+            card.classList.add('flash-correct');
+
+            const inputEl = document.getElementById('answer-input');
+            inputEl.value = '';
+            generateProblem();
+        }
+
+        function skipProblem() {
+            if (state.screen !== 'play') return;
+
+            const timeTaken = (performance.now() - state.problemStartTime) / 1000;
+            state.history.push({
+                op: state.currentProblem.op,
+                text: state.currentProblem.text,
+                answer: state.currentProblem.answer,
+                timeTaken: timeTaken,
+                skipped: true
+            });
+
+            // Penalti streak & pengurangan waktu 2 detik
+            state.streak = 0;
+            state.timeLeft = Math.max(0, state.timeLeft - 2);
+            playTone('skip');
+            updateGameplayHUD();
+
+            const card = document.getElementById('problem-card');
+            card.classList.remove('shake-skip');
+            void card.offsetWidth;
+            card.classList.add('shake-skip');
+
+            if (state.timeLeft <= 0) {
+                endGame();
+                return;
+            }
+
+            const inputEl = document.getElementById('answer-input');
+            inputEl.value = '';
+            inputEl.focus();
+            generateProblem();
+        }
+
+        function endGame() {
+            if (state.timerInterval) {
+                clearInterval(state.timerInterval);
+                state.timerInterval = null;
+            }
+            playTone('end');
+
+            // Cek & Simpan High Score
+            const hsKey = `dur_${state.duration}`;
+            const prevBest = state.highScores[hsKey] || 0;
+            const isNewRecord = state.score > prevBest && state.score > 0;
+            if (isNewRecord) {
+                state.highScores[hsKey] = state.score;
+                localStorage.setItem('aritmatika_highscores', JSON.stringify(state.highScores));
+            }
+
+            renderResults(isNewRecord);
+            switchScreen('result');
+        }
+
+        /* =====================================================================
+           6. RENDER HASIL & ANALITIK PERFORMA
+           ===================================================================== */
+        function renderResults(isNewRecord) {
+            document.getElementById('new-record-badge').classList.toggle('hidden', !isNewRecord);
+
+            const solved = state.history.filter(h => !h.skipped);
+            const totalAttempted = state.history.length;
+            const accuracy = totalAttempted > 0 ? Math.round((solved.length / totalAttempted) * 100) : 100;
+
+            const totalSolvedTime = solved.reduce((acc, item) => acc + item.timeTaken, 0);
+            const avgTime = solved.length > 0 ? (totalSolvedTime / solved.length) : 0;
+
+            // QPM berdasarkan durasi sesi
+            const minutes = state.duration / 60;
+            const qpm = (state.score / minutes).toFixed(1);
+
+            document.getElementById('res-score').textContent = state.score;
+            document.getElementById('res-qpm').textContent = qpm;
+            document.getElementById('res-avg-time').textContent = `${avgTime.toFixed(2)}s`;
+            document.getElementById('res-accuracy').textContent = `${accuracy}%`;
+            document.getElementById('res-attempted').textContent = `${solved.length}/${totalAttempted}`;
+
+            // 1. Breakdown per Operasi
+            const opMeta = {
+                add: { symbol: '+', label: state.lang === 'id' ? 'Penjumlahan' : 'Addition' },
+                sub: { symbol: '−', label: state.lang === 'id' ? 'Pengurangan' : 'Subtraction' },
+                mul: { symbol: '×', label: state.lang === 'id' ? 'Perkalian' : 'Multiplication' },
+                div: { symbol: '÷', label: state.lang === 'id' ? 'Pembagian' : 'Division' },
+                alg: { symbol: 'x', label: state.lang === 'id' ? 'Aljabar' : 'Algebra' }
+            };
+
+            const breakdownEl = document.getElementById('breakdown-list');
+            breakdownEl.innerHTML = '';
+
+            const usedOps = Object.keys(opMeta).filter(op => state.history.some(h => h.op === op));
+            if (usedOps.length === 0) {
+                breakdownEl.innerHTML = `<p class="text-xs text-slate-400">${i18n[state.lang].noData}</p>`;
+            } else {
+                usedOps.forEach(op => {
+                    const items = solved.filter(h => h.op === op);
+                    const avg = items.length > 0
+                        ? (items.reduce((s, i) => s + i.timeTaken, 0) / items.length).toFixed(2) + 's'
+                        : '-';
+                    breakdownEl.innerHTML += `
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800 text-sm">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-500 font-mono font-bold flex items-center justify-center text-xs">${opMeta[op].symbol}</span>
+                                <span class="font-medium">${opMeta[op].label}</span>
+                            </div>
+                            <div class="font-mono text-xs flex items-center gap-4">
+                                <span class="text-slate-500 dark:text-slate-400">${items.length} soal</span>
+                                <span class="font-bold text-slate-900 dark:text-white w-14 text-right">${avg}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // 2. Soal Terlambat atau Dilewati (Review)
+            const reviewEl = document.getElementById('review-list');
+            reviewEl.innerHTML = '';
+
+            // Urutkan berdasarkan yang dilewati dulu, lalu waktu terlama
+            const sortedReview = [...state.history]
+                .sort((a, b) => (b.skipped - a.skipped) || (b.timeTaken - a.timeTaken))
+                .slice(0, 6);
+
+            if (sortedReview.length === 0) {
+                reviewEl.innerHTML = `<p class="text-xs text-slate-400">${i18n[state.lang].noData}</p>`;
+            } else {
+                sortedReview.forEach(item => {
+                    const statusBadge = item.skipped
+                        ? `<span class="text-[11px] font-medium px-2 py-0.5 rounded bg-rose-500/15 text-rose-500">${i18n[state.lang].skippedTag}</span>`
+                        : `<span class="font-mono text-xs text-slate-500 dark:text-slate-400">${item.timeTaken.toFixed(2)}s</span>`;
+
+                    reviewEl.innerHTML += `
+                        <div class="flex items-center justify-between p-2.5 px-3 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800 text-sm">
+                            <div class="font-mono">
+                                <span class="text-slate-700 dark:text-slate-200">${item.text}</span>
+                                <span class="text-amber-500 font-bold ml-1.5">= ${item.answer}</span>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        /* =====================================================================
+           7. EVENT LISTENERS KEYBOARD & INPUT
+           ===================================================================== */
+        const answerInput = document.getElementById('answer-input');
+
+        answerInput.addEventListener('input', (e) => {
+            if (state.screen !== 'play' || !state.currentProblem) return;
+
+            // Bersihkan karakter selain angka dan tanda minus di awal
+            let raw = e.target.value.replace(/[^0-9\-]/g, '');
+            if (raw.indexOf('-') > 0) {
+                raw = raw.replace(/-/g, '');
+            }
+            e.target.value = raw;
+
+            const isAutoSubmit = document.getElementById('opt-autosubmit').checked;
+            if (isAutoSubmit && raw !== '' && raw !== '-') {
+                const numericVal = parseInt(raw, 10);
+                if (numericVal === state.currentProblem.answer) {
+                    handleCorrectAnswer();
+                }
+            }
+        });
+
+        answerInput.addEventListener('keydown', (e) => {
+            if (state.screen !== 'play') return;
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const val = parseInt(answerInput.value, 10);
+                if (!isNaN(val) && val === state.currentProblem.answer) {
+                    handleCorrectAnswer();
+                } else {
+                    // Beri efek getar ringan jika salah tekan Enter
+                    answerInput.classList.add('border-rose-500');
+                    setTimeout(() => answerInput.classList.remove('border-rose-500'), 200);
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                skipProblem();
+            }
+        });
+
+        // Shortcut Keyboard Global (Enter untuk mulai / main lagi)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (state.screen === 'setup' && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    startGame();
+                } else if (state.screen === 'result') {
+                    e.preventDefault();
+                    startGame();
+                }
+            }
+        });
+
+        // Inisialisasi awal saat halaman dimuat
+        window.onload = function () {
+            selectDuration(120);
+            applyPreset('standard');
+            applyTranslations();
+            updateHighScoreUI();
+        };
+    </script>
+</body>
+</html>
